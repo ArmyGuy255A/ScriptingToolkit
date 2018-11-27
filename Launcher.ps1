@@ -14,7 +14,7 @@ This script should be used to interact with the Scripting Toolkit
 PS C:\ScriptingToolkit> .\Launcher.ps1
 
 .LINK
-'https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit'
+'https://github.com/ArmyGuy255A/ScriptingToolkit'
 
 #>
 
