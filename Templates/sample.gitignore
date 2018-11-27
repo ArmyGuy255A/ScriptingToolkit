@@ -9,6 +9,7 @@
 *.xls
 *.xlsx
 *.bak
+*.exe
 .gitignore
 
 # Development Directories
