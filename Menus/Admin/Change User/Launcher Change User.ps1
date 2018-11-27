@@ -22,7 +22,7 @@ Date Created: 05 JAN 2018
 Version: 1.0.0
 
 .LINK
-'https://microsoft.visualstudio.com/M365%20Security%20and%20Compliance/_git/ScriptingToolkit'
+'https://github.com/ArmyGuy255A/ScriptingToolkit'
 
 #>
 
