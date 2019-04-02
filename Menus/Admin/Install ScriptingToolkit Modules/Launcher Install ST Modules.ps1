@@ -1,13 +1,9 @@
 ﻿##############################################
 # Written By: CW2 Dieppa, Phillip A.         #
-# On: 27 FEB 2018                            #
+# On: 02 APR 2019                            #
 # 173rd IBCT                                 #
-# This script disables all user accounts     #
-# that are in the compliance groups. The     #
-# script allows the user to select a         #
-# frequency at which the accounts will be    #
-# disabled.                                  #
-#                                            #
+# This script installs the modules required  #
+# for independent menu generation.           #
 # Rights Required: WA			             #
 ##############################################
 
@@ -57,29 +53,40 @@ if ($configData -eq $null) {
 #endregion
 
 Clear-Host
-$pshellProfile = $configData.ToolRootDirectory + "\Templates\Microsoft.PowerShell_profile.ps1"
-$destProfile = $($env:USERPROFILE + "\Documents\Microsoft.PowerShell_profile.ps1")
-if (Test-Path $pshellProfile) {
-    if (Test-Path $($env:USERPROFILE + "\Documents\WindowsPowerShell")) {
-        #Place it in the \Documents\WindowsPowerShell directory instead
-        $destProfile = $($env:USERPROFILE + "\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1")
-        try {
-            Copy-Item $pshellProfile $destProfile
-            (Get-Content $destProfile) -replace '<st directory>', ($configData.ToolRootDirectory) | Set-Content $destProfile
-        } catch {
-            Write-Warning "Insufficient Access to $destProfile"
-        }
-    } else {
-        try {
-            Copy-Item $pshellProfile $destProfile
-            (Get-Content $destProfile) -replace '<st directory>', ($configData.ToolRootDirectory) | Set-Content $destProfile
-        } catch {
-            Write-Warning "Insufficient Access to $destProfile"
-        }
-    }
-    
+$UserPSModulePath = "C:\Users\$ENV:USERNAME\Documents\WindowsPowerShell\Modules\ScriptingToolkit"
+
+
+if (!$(Test-Path $UserPSModulePath)) {
+    Write-Host "Creating $UserPSModulePath..." -ForegroundColor Yellow
+    New-Item $UserPSModulePath -ItemType Directory -Force | out-Null
+} else {
+    Write-Host "Emptying $UserPSModulePath..." -ForegroundColor Yellow
+    Get-ChildItem $UserPSModulePath -Recurse | Remove-Item
 }
 
-Write-Host "The following aliases have been installed: ras, sudo, c2, wa, oa, tk" -ForegroundColor Yellow
+$libraries = Get-ChildItem ($configData.ToolRootDirectory + "\Libraries")
+
+foreach ($script in $libraries) {
+    Write-Host "Copying $($script.FullName)..." -ForegroundColor DarkYellow
+    Copy-Item $script.FullName -Destination ($UserPSModulePath + "\" + $script.Name) -Force
+}
+
+$modules = Get-ChildItem $UserPSModulePath -Name
+
+[string]$STModule = ""
+foreach ($module in $modules) {
+    $STModule += ". `$PSScriptRoot\$module`n" 
+}
+
+Write-Host "Generating Module..." -ForegroundColor Yellow
+$STModule | Out-File ($UserPSModulePath + "\ScriptingToolkit.psm1")
+
+Remove-Module ScriptingToolkit
+Import-Module ScriptingToolkit -Verbose
+
+Write-Host "`n`nScripting Toolkit modules installed successfully.`n`n" -ForegroundColor Green
+
+Write-Host "Scripting Toolkit Commands" -ForegroundColor Cyan
+Get-Module -Name ScriptingToolkit | Select-Object -ExpandProperty ExportedCommands | Sort-Object
 
 pressAnyKeyToContinue

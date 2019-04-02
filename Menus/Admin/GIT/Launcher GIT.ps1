@@ -11,7 +11,7 @@ Sync-STGitRepo
 Must have GIT installed on the local machine in order to work.
 
 .LINK
-https://github.com/ArmyGuy255A/ScriptingToolkit
+https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit
 
 #>
 
@@ -82,16 +82,16 @@ This cmdlet performs a Commit, Push, and Pull operation for the $configData.Tool
 The
 
 .EXAMPLE
-Sync-STGitRepo -URL "https://github.com/ArmyGuy255A/ScriptingToolkit" -Directory $configData.ToolRootDirectory
+Sync-STGitRepo -URL "https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit" -Directory $configData.ToolRootDirectory
 
 .EXAMPLE
-Sync-STGitRepo -URL "https://github.com/ArmyGuy255A/ScriptingToolkit" -Directory C:\ScriptingToolkit
+Sync-STGitRepo -URL "https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit" -Directory C:\ScriptingToolkit
 
 .NOTES
 Must have GIT installed on the local machine in order to work.
 
 .LINK
-https://github.com/ArmyGuy255A/ScriptingToolkit
+https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit
 
 #>
 

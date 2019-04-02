@@ -234,7 +234,7 @@ Function Write-STLog() {
 
       #Write the prefix
       if ($WithTimestamp) {
-        $entry += $(Get-Date -Format "yyyy-MM-dd HH:MM:ss") + ": "
+        $entry += $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") + ": "
       }
 
       if ($null -ne $messagePrefix) {
@@ -394,7 +394,7 @@ Generates an alert in the console window and logs the alert using the Write-STLo
         }
         #Write the prefix
         if ($WithTimestamp) {
-          Write-Host $(Get-Date -Format "yyyy-mm-dd HH:MM:ss") ": " -NoNewLine
+          Write-Host $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") ": " -NoNewLine
         }
         Write-Host $messagePrefix -ForegroundColor $messagePrefixForegroundColor -BackgroundColor $messagePrefixBackgroundColor -NoNewline
         Write-Host " : $message"
