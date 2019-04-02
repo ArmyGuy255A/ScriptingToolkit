@@ -483,7 +483,7 @@ Function Show-STMenu () {
             }
             
             Write-Host $blankLine -NoNewline
-            $result = $null
+            $result = ""
 
             #Get the current cursor position in the console window. This helps overwrite the line later on.
             $originalPosition = $host.UI.RawUI.CursorPosition
@@ -622,11 +622,19 @@ Function Show-STMenu () {
                 if ($script:lastPage -gt 0) {
                     Write-Host "`nUse the <- (Left) and -> (Right) keys to navigate through pages." -ForegroundColor Gray
                 }
+
                 Write-Host "`n$prompt" -NoNewLine
 
                 #Keep looping until Enter is pressed
+                $result = @()
                 $keyinfo = $null
+                $startPosition = $host.UI.RawUI.CursorPosition
+                $originalPosition = $startPosition
                 While ($keyinfo.VirtualKeyCode -ne 13) {
+
+                    #move the cursor back into position
+                    $host.UI.RawUI.CursorPosition = $originalPosition
+                    
                     #read input
                     $keyinfo = $Host.UI.RawUI.ReadKey("IncludeKeyDown")
 
@@ -646,12 +654,36 @@ Function Show-STMenu () {
                             $script:currentPage += 1
                             break
                         }
+                    } elseif ($keyinfo.VirtualKeyCode -eq 8) {
+
+                        #Backspace Key
+                        if ($originalPosition.X -gt $startPosition.X) {
+                            #Remove the last character from the result array.
+                            $newResult = @()
+                            for ($x = 0; $x -lt $result.Count - 1; $x++) {
+                                $newResult += $result[$x]
+                            }
+                            $result = $newResult
+
+                            #Move the cursor backwards
+                            $originalPosition = $host.UI.RawUI.CursorPosition
+
+                            #Clear out the last character
+                            $host.UI.Write(" ")
+                            
+                        } else {
+                            #Do nothing
+                        }
+
                     } elseif ($keyinfo.VirtualKeyCode -ne 13) {
+                        #Enter All other keys except Enter
                         $result += $keyinfo.Character.ToString()
                         $originalPosition = $host.UI.RawUI.CursorPosition
 
                     }
                 }
+                #Join the array together into a string.
+                $result = $result -join ""
 
             } else {
                 #Pagination with primitive navigation system
@@ -700,7 +732,6 @@ Function Show-STMenu () {
                 } 
             }
             
-
             #Check for a numeric string to typecast
             if ($result -cmatch '^[0-9]*$' -and $numericChoices.Count -gt 0) {
                 #Check to ensure the length isn't too big
@@ -887,7 +918,6 @@ Function Show-STReadHostMenu () {
             $result = $(Read-Host -Prompt $Prompt)
         }
         
-
         return $result
     }
 
@@ -1369,4 +1399,3 @@ Function Show-STDatePicker {
     return $objCalendar.SelectionStart
     
 }
-    
