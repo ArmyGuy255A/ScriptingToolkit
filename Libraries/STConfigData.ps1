@@ -213,7 +213,8 @@ Function Read-ConfigData ($configFile, $searchString) {
     $val1 = ((Get-Content $configFile)[$param.LineNumber[-1]]).Trim()
     $val2 = ""
     try {
-        $val2 = ((Get-Content $configFile)[$param.LineNumber[-1] + 1]).Trim()
+        $val2 = (Get-Content $configFile)[$param.LineNumber[-1] + 1]
+        if ($val2) { $val2 = $val2.Trim() }
     } catch {
         #End of file.
         $val2 = ""
