@@ -21,7 +21,7 @@ function Get-STCommonDirectory () {
     while ($notFound) {
         #Iterate through the directories until STCommon.ps1 is found.
         Set-Location $libraryDirectory
-        $STCommon = Get-ChildItem -Path Libraries\STCommon.ps1 -ErrorAction:SilentlyContinue
+        $STCommon = Get-ChildItem -Path ..\..\..\Libraries\STCommon.ps1 -ErrorAction:SilentlyContinue
         if (!$STCommon) {
             Set-Location ..
             $libraryDirectory = Get-Location
@@ -41,7 +41,7 @@ if ($configData -eq $null) {
     . $STCommonDirectory
 
     #get the config file's Fully Qualified name to pass into the Get-ConfigData
-    $configFQName = Get-ChildItem -Path Config\config.ini | Select-Object FullName
+    $configFQName = Get-ChildItem -Path ..\..\..\Config\config.ini | Select-Object FullName
     #load the config.ini
     $configData = @{}
     $configData = Get-ConfigData $configFQName.FullName.ToString()
@@ -53,7 +53,7 @@ if ($configData -eq $null) {
 #endregion
 
 Clear-Host
-$UserPSModulePath = "C:\Users\$ENV:USERNAME\Documents\WindowsPowerShell\Modules\ScriptingToolkit"
+$UserPSModulePath = "$ENV:USERPROFILE\Documents\WindowsPowerShell\Modules\ScriptingToolkit"
 
 
 if (!$(Test-Path $UserPSModulePath)) {
