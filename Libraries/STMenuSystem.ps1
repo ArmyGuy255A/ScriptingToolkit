@@ -104,7 +104,7 @@ Function Show-STMenu () {
       [Switch]$Exit=$false,
     
     [Parameter(Mandatory=$False, ValueFromPipeline=$false)]
-      [string]$Custom=$null,
+      [string[]]$Custom=$null,
     
     [Parameter(Mandatory=$False, ValueFromPipeline=$false)]
       [ConsoleColor]$BorderColor=[ConsoleColor]::DarkYellow,
@@ -231,117 +231,147 @@ Function Show-STMenu () {
         
 
         #Build the letter choices
-
+        
         if ($Custom -and $MenuType -ieq "Default") {
-            $firstChar = $Custom.Substring(0,1).ToUpperInvariant()
-            if ($firstChar -ne "E" -and 
-                $firstChar -ne "B" -and 
-                $firstChar -ne "!" -and 
-                $firstChar -ne "^" -and 
-                $Custom -cnotmatch '^[\d]+$') {
+            foreach ($customItem in $Custom) {
 
-                #$option = $Custom
-                #$optionPrefix = "[" + $firstChar + "]"
-                $customStringChar += $firstChar
-                $letterChoices.Add($firstChar, $Custom)
-            } else {
-                #Find the next available letter to use in the menu.
-                $customString = $null
-                $foundGoodChar = $false
+                $firstChar = ""
+                $firstChar = $customItem.Substring($customItem.IndexOf("&") + 1, 1)
+                $firstChar = $firstChar.ToUpperInvariant()
+                $customItem = $customItem.Replace("&", "")
+                if (!$firstChar) {
+                    $firstChar = $customItem.Substring(0,1).ToUpperInvariant()
+                } 
+                
+                if ($firstChar -ne "E" -and 
+                    $firstChar -ne "B" -and 
+                    $firstChar -ne "!" -and 
+                    $firstChar -ne "^" -and 
+                    $customItem -cnotmatch '^[\d]+$') {
 
-                #Ensure it's not a numeric string
-                if ($Custom -cnotmatch '^[\d]+$') {
-                    for ($y = 0; $y -lt $Custom.ToCharArray().Length; $y++) {
-                        if ($Custom.ToCharArray()[$y] -ine ("B") -and 
-                            $Custom.ToCharArray()[$y] -ine ("E") -and
-                            $Custom.ToCharArray()[$y] -ine ("!") -and
-                            $Custom.ToCharArray()[$y] -ine ("^") -and 
-                            !$foundGoodChar) {
+                    #$option = $Custom
+                    #$optionPrefix = "[" + $firstChar + "]"
+                    $customStringChar += $firstChar
+                    $letterChoices.Add($firstChar, $customItem)
+                } else {
+                    #Find the next available letter to use in the menu.
+                    $customString = $null
+                    $foundGoodChar = $false
 
-                            $customString += $Custom.ToUpperInvariant().ToCharArray()[$y]
-                            $customStringChar = $Custom.ToUpperInvariant().ToCharArray()[$y]
-                            $foundGoodChar = $true
-                            
-                        } else {
-                            #Add the remaining characters
-                            $customString += $Custom.ToLowerInvariant().ToCharArray()[$y]
+                    #Ensure it's not a numeric string
+                    if ($customItem -cnotmatch '^[\d]+$') {
+                        for ($y = 0; $y -lt $customItem.ToCharArray().Length; $y++) {
+                            if ($customItem.ToCharArray()[$y] -ine ("B") -and 
+                                $customItem.ToCharArray()[$y] -ine ("E") -and
+                                $customItem.ToCharArray()[$y] -ine ("!") -and
+                                $customItem.ToCharArray()[$y] -ine ("^") -and 
+                                !$foundGoodChar) {
 
+                                #$customString += $customItem.ToLowerInvariant().ToCharArray()[$y]
+                                if (!$letterChoices.ContainsKey($customItem.TouPPERInvariant().ToCharArray()[$y])) {
+                                    $customStringChar = $customItem.ToUpperInvariant().ToCharArray()[$y]
+                                    $customString += $customItem.ToUpperInvariant().ToCharArray()[$y]
+                                    $foundGoodChar = $true
+                                } else {
+                                    $customString += $customItem.ToLowerInvariant().ToCharArray()[$y]
+                                }
+                                
+                                
+                            } else {
+                                #Add the remaining characters
+                                $customString += $customItem.ToLowerInvariant().ToCharArray()[$y]
+
+                            }
                         }
                     }
-                }
-                    
+                        
 
-                if (!$customStringChar) {
-                    #$option = $Custom
-                    #$optionPrefix = "[Z]"
-                    $customStringChar += "Z"
-                    $letterChoices.Add("Z", $Custom)
+                    if (!$customStringChar) {
+                        #$option = $Custom
+                        #$optionPrefix = "[Z]"
+                        $customStringChar += "Z"
+                        $letterChoices.Add("Z", $customItem)
 
-                } else {
-                    #$option = $customString
-                    #$optionPrefix = "[" + $customStringChar + "]"
-                    $letterChoices.Add($customStringChar, $customString)
+                    } else {
+                        #$option = $customString
+                        #$optionPrefix = "[" + $customStringChar + "]"
+                        $letterChoices.Add($customStringChar.ToString(), $customString)
+                    }
                 }
             }
         }
 
         #Build the selection option string for the Read-Host prompt
-        $totalCharacterChoices = @()
-        $totalCharacterChoiceString = ""
+        #$totalCharacterChoices = @()
+        #$totalCharacterChoiceString = ""
 
         if ($MenuType -ieq "AcceptDecline") {
             $letterChoices.Add("A", "Accept")
             $letterChoices.Add("D", "Decline")
-            $totalCharacterChoices += "A"
-            $totalCharacterChoices += "D"
+           #$totalCharacterChoices += "A"
+            #$totalCharacterChoices += "D"
         }
 
         if ($MenuType -ieq "YesNo") {
             $letterChoices.Add("Y", "Yes")
             $letterChoices.Add("N", "No")
-            $totalCharacterChoices += "Y"
-            $totalCharacterChoices += "N"
+            #$totalCharacterChoices += "Y"
+            #$totalCharacterChoices += "N"
         }
 
         if ($MenuType -ieq "TrueFalse") {
             $letterChoices.Add("T", "True")
             $letterChoices.Add("F", "False")
-            $totalCharacterChoices += "T"
-            $totalCharacterChoices += "F"
+            #$totalCharacterChoices += "T"
+            #$totalCharacterChoices += "F"
         }
 
         if ($Back) {
             $letterChoices.Add("B", "Back")
-            $totalCharacterChoices += "B"
+            #$totalCharacterChoices += "B"
         }
 
         if ($Exit) {
             $letterChoices.Add("E", "Exit")
-            $totalCharacterChoices += "E"
+            #$totalCharacterChoices += "E"
         }
 
         if ($Custom) {
-            $totalCharacterChoices += $customStringChar
+            #$totalCharacterChoices += $customStringChar
         }
 
+        #Ensure the menu items are properly capitalized
+        $tmpChoices = $letterChoices.Clone()
+        $tmpChoices.Keys | ForEach-Object {
 
-        foreach ($char in $totalCharacterChoices) {
-            
-            if ($char -ne $totalCharacterChoices[-1]) {
-                $totalCharacterChoiceString += $char + ","
-            } else {
-                $totalCharacterChoiceString += $char
+            #Get the index of the letter that should be capitalized
+            $capitalLetterIndex = $tmpChoices[$_].ToUpperInvariant().IndexOf($_)
+
+            #Now, capitalize the proper letter and turn the rest to lowercase
+            $chars = $tmpChoices[$_].ToCharArray()
+            $convertedString = ""
+            for ($x = 0; $x -lt $chars.Count; $x++) {
+                if ($x -ne $capitalLetterIndex) {
+                    $convertedString += $chars[$x].ToString().ToLowerInvariant()
+                } else {
+                    $convertedString += $chars[$x].ToString().ToUpperInvariant()
+                }
+                
             }
+            $letterChoices[$_] = $convertedString
+
         }
 
+        #Build the letter choice string
+        $totalCharacterChoiceString = $($letterChoices.Keys | Sort-Object -Descending) -join ','
 
         #Build the prompt string
         $prompt = ""
-        if ($MenuType -ieq "Default" -and $totalCharacterChoices.Count -eq 0 -and $numericChoices.Count -gt 0) {
+        if ($MenuType -ieq "Default" -and $letterChoices.Keys.Count -eq 0 -and $numericChoices.Count -gt 0) {
             $prompt = "Please select an option from [1-$($numericChoices.Count)]: "
-        } elseif ($MenuType -ieq "Default" -and $totalCharacterChoices.Count -gt 0 -and $numericChoices.Count -eq 0) {
+        } elseif ($MenuType -ieq "Default" -and $letterChoices.Keys.Count -gt 0 -and $numericChoices.Count -eq 0) {
             $prompt = "Please select an option from [$totalCharacterChoiceString]: "
-        } elseif ($MenuType -ieq "Default" -and $totalCharacterChoices.Count -gt 0 -and $numericChoices.Count -gt 0) {
+        } elseif ($MenuType -ieq "Default" -and $letterChoices.Keys.Count -gt 0 -and $numericChoices.Count -gt 0) {
             $prompt = "Please select an option from [1-$($numericChoices.Count),$totalCharacterChoiceString]: "
         } else {
             $prompt = "Please select an option from [$totalCharacterChoiceString]: "
@@ -377,7 +407,7 @@ Function Show-STMenu () {
         $remainder = ($numericChoices.Count % $itemsDisplayed)
         $quotient = ($numericChoices.Count - $remainder) / $itemsDisplayed
         $pages = $quotient - 1
-        #FIXME: Not sure if it's possible to avoid the if statement, but it works. 
+        
         if ($remainder) {$pages = $quotient}
         $script:lastPage = $pages
 
@@ -411,7 +441,10 @@ Function Show-STMenu () {
 
             #Write the numeric choices to the console.
             if ($numericChoices.Count -gt 0) {
-                $numericChoices = $numericChoices.GetEnumerator() | Sort-Object -Property Name
+                if ($numericChoices.GetType() -eq [hashtable]) {
+                    $numericChoices = $numericChoices.GetEnumerator() | Sort-Object -Property Name
+                }
+                
                 for ($x = $script:currentPage * $ItemsDisplayed; $x -le $script:currentPage * $ItemsDisplayed + ($ItemsDisplayed - 1); $x++) {
                     if ($script:currentPage -lt $script:lastPage) {
                         #Write the choices on the screen
@@ -482,7 +515,7 @@ Function Show-STMenu () {
                 Write-Host $note -ForegroundColor Gray
             }
             
-            Write-Host $blankLine -NoNewline
+            Write-Host "" -NoNewline
             $result = ""
 
             #Get the current cursor position in the console window. This helps overwrite the line later on.
@@ -754,7 +787,7 @@ Function Show-STMenu () {
             } elseif ($Exit -and $result -ieq "E") {
 
                 $badInput = $false
-            } elseif ($Custom -and $result -ieq $customStringChar) {
+            } elseif ($Custom -and $letterChoices.ContainsKey($result.ToUpperInvariant())) {
 
                 $badInput = $false
             } elseif ($MenuType -ieq "AcceptDeny" -and ($result -ieq "A" -or $result -ieq "D")) {
@@ -767,7 +800,7 @@ Function Show-STMenu () {
 
                 $badInput = $false
             } else {
-
+                
             }
 
 
@@ -912,10 +945,11 @@ Function Show-STReadHostMenu () {
             Write-Host $note -ForegroundColor Gray
         }
 
+        Write-Host $($prompt + " : ") -NoNewline
         if ($AsSecureString) {
-            $result = Read-Host -Prompt $Prompt -AsSecureString
+            $result = $host.UI.ReadLineAsSecureString()
         } else {
-            $result = $(Read-Host -Prompt $Prompt)
+            $result = $host.UI.ReadLine()
         }
         
         return $result
@@ -981,7 +1015,7 @@ Function Show-STPromptForChoiceMenu () {
         $paddingString = $null
 
         $maxLength = $Title.Length + ($Title.Length % 2) + $titleMargin
-
+        $MenuType = "Default"
         if ($MenuType -ieq "Default" -and $Choices) {
             foreach ($choice in $Choices) {
                 if ($choice.ToString().Length -gt $maxLength) {
@@ -1319,8 +1353,7 @@ Function Show-STDirectoryScriptMenu ($path) {
     #Add each item to the menu options
     $menuOptions = @()
     foreach ($directory in $directories) {
-        #TODO: Search for Launcher*.ps1 files and add those instead of the directories
-        $menuOptions += $directory.BaseName
+       $menuOptions += $directory.BaseName
     }
 
     foreach ($script in $scripts) {
@@ -1398,4 +1431,21 @@ Function Show-STDatePicker {
     
     return $objCalendar.SelectionStart
     
+}
+
+Function Get-STCredential () {
+    Param (
+        [string] $UsernameInfo = "Enter a Username.",
+        [string] $PasswordInfo = "Enter the Password."
+    )
+
+
+    $un = Show-STReadHostMenu -Title "Username" -Prompt "Username" -Info $("Info", $UsernameInfo)
+    Clear-Host
+    $pw = Show-STReadHostMenu -Title "Password" -Prompt "Password" -Info $("Info", $PasswordInfo) -AsSecureString
+    Clear-Host
+
+    $cred = New-Object System.Management.Automation.PSCredential($un, $pw)
+
+    return $cred
 }
