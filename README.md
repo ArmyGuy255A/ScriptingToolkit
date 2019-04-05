@@ -12,7 +12,7 @@ The PowerShell Scripting Toolkit was built specifically for administrators that 
 * Automatic script integration into the menu system
 
 ### Problem Set
-Many Windows administrators will typically write or reuse PowerShell scripts for their environment. Natural problems occurr when the administrator trys sharing their scripts with other administrators. Often times, other administrators do not know how to modify the script for their environment. This can cause confusion, delay, and sometimes disastrous side effects. 
+Many Windows administrators will typically write or reuse PowerShell scripts for their environment. Natural problems occurr when the administrator tries sharing their scripts with other administrators. Often times, other administrators do not know how to modify the script for their environment. This can cause confusion, delay, and sometimes disastrous side effects. 
 
 ### Purpose
 The purpose of the toolkit is designed for administrators that want to to share and distribute their custom tools to other people in their community. Administrators can share their scripting tools by adding the scripts to the "Menus" directory and the toolkit will handle the rest.
@@ -20,7 +20,7 @@ The purpose of the toolkit is designed for administrators that want to to share 
 ## Getting Started
 
 1. Copy or clone the contents of the toolkit to a directory. For example: `C:\scripts`
-   - A sample of the toolkit directory is listed below. Note, your structure may have fewer folders. That's because some scripts are not ready for release   
+   - A sample of the toolkit directory is listed below. Note, your structure may have fewer folders. That's because some scripts are not ready for release.
     <br />
     ![](Help/DirectoryListing.png?raw=true)
     
@@ -53,7 +53,7 @@ Launching the toolkit can be accomplished using several methods.
 
 ### Method 1 - First Launch
 1. Ensure you are using the latest version of PowerShell and WMI by viewing the [dependencies](#dependencies)
-2. Launch a Administrator PowerShell CLI by typing this in a regular PowerShell window: `start-process powershell -verb runas`
+2. Launch an Administrator PowerShell CLI by typing this in a regular PowerShell window: `start-process powershell -verb runas`
 3. Ensure the **ExecutionPolicy** is set to **RemoteSigned** by issing the following command: `Get-ExecutionPolicy`
    - The execution policy may be changed to **RemoteSigned** or **Unrestricted** by typing: `Set-ExecutionPolicy RemoteSigned` or `Set-ExecutionPolicy Unrestricted`
 4. Navigate to the root directory where you downloaded the ScriptingToolkit. Example: `cd c:\scripts\ScriptingToolkit`
@@ -69,7 +69,7 @@ Launching the toolkit can be accomplished using several methods.
 The toolkit comes with a standard set of shortcuts that eases launching the toolkit and performing common tasks. It accomplishes this by installing a [PowerShell profile](https://technet.microsoft.com/en-us/library/bb613488(v=vs.85).aspx) to `%UserProfile%\My Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`. The template is located in [Templates\Microsoft.PowerShell_profile.ps1](Templates\Microsoft.PowerShell_profile.ps1). You can add additional aliases to the template by adding to the examples in the file.
 
 ### Available Shortcuts
-* `ras` - Launches an a PowerShell CLI with a smartcard
+* `ras` - Launches a PowerShell CLI with a smartcard
 * `sudo` - Launches an administrator PowerShell CLI
 * `tk` - Launches the ScriptingToolkit
 
