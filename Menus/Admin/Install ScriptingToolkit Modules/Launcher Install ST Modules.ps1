@@ -81,7 +81,7 @@ foreach ($module in $modules) {
 Write-Host "Generating Module..." -ForegroundColor Yellow
 $STModule | Out-File ($UserPSModulePath + "\ScriptingToolkit.psm1")
 
-Remove-Module ScriptingToolkit
+Get-Module ScriptingToolkit | Remove-Module
 Import-Module ScriptingToolkit -Verbose
 
 Write-Host "`n`nScripting Toolkit modules installed successfully.`n`n" -ForegroundColor Green
