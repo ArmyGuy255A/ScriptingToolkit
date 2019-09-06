@@ -54,6 +54,24 @@ function Get-STCommonDirectory () {
     }
 }
 
+#This function checks the status of the seclogon service that's required to switch users.
+function Test-SecLogon () {
+
+    $color = "Yellow"
+    $seclogon = Get-Service seclogon
+    switch ($seclogon.Status) {
+        "Stopped" {  
+            $color = "red"
+        }
+        Default {
+            $color = "green"
+        }
+    }
+
+    Write-Host "The Secondary Logon (seclogon) service is: " -NoNewline
+    Write-Host ("[{0}]" -f $seclogon.Status.ToString().ToUpper()) -ForegroundColor $color
+}
+
 #This config.ini data within the script
 if ($configData -eq $null) {
     #Import the STCommon.ps1 libraries
@@ -113,17 +131,28 @@ while ($result -eq -1) {
 
         if ($logonType -eq 0) {
             #Run the /smartcard option
-            runas /smartcard "powershell -Command 'Start-Process -Credential $credential powershell -ArgumentList '-NoExit -Command & $Launcher''"
-            pressAnyKeyToContinue
+            try {
+                runas /smartcard "powershell -Command 'Start-Process -Credential $credential powershell -ArgumentList '-NoExit -Command & $Launcher''"
+            } catch {
+                Test-SecLogon
+            }
+            
         } else {
             #Run the /user option
             $username = Show-STReadHostMenu -Title "Enter Username" -Prompt "Username" -Info @("Hint     ","Include the domain with the username", "Example 1", "username@contoso.com", "Example 2", "CONTOSO\username")
             if ($configData.DebugMode -ine "on") {     Clear-Host }
             $password = Show-STReadHostMenu -Title "Enter Password" -Prompt "Password" -AsSecureString
             $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+
             #runas /user:$username "powershell -Command & '$Launcher'"
-            Start-Process -Credential $credential powershell -ArgumentList "-NoExit -Command & $Launcher"
-            pressAnyKeyToContinue
+            try {
+                Start-Process -Credential $credential powershell -ArgumentList "-NoExit -Command & $Launcher" -WorkingDirectory "C:\Windows\System32"
+
+            } catch {
+                Test-SecLogon                
+            }
         }
+        
+        pressAnyKeyToContinue
     } 
 }
