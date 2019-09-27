@@ -429,7 +429,8 @@ Function Show-STMenu () {
             for ($x = 0; $x -lt $pageStringPadding; $x++) {
                 $pageString = $pageString.Insert(0, " ")
             }
-
+            Clear-Host
+            
             #Output the border
             Write-Host $border -ForegroundColor $BorderColor -NoNewline
             Write-Host $pageString
@@ -1304,32 +1305,17 @@ $result = 0
             $title = "Please confirm your selection"
         }
 
-
-        $choices = @("Yes", 
-        "No"
-        )
-
         $info = @("Your Selection", $selection)
         #$info = @()
-        [int]$result = Show-STMenu $title $choices $info
-
-        #Only accept data within the bounds of the choices - reject everything else.
-        if (($result -le 0) -or ($result -gt $choices.Length)) {
-            $result = 0
-        }
-
+        $result = Show-STMenu $title -info $info -MenuType YesNo
     }
 
-
-
-p1v5_stby
-p0v75_stby
     switch ($result) {
-        1 {
+        "Y" {
             return $true
         }
 
-        2 {
+        "N" {
             return $false
         }
 
