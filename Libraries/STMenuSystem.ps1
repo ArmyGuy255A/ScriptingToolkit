@@ -455,7 +455,11 @@ Function Show-STMenu () {
                             Write-Host $numericChoices[$x].Value.Replace("!!!","") -ForegroundColor Green
                         } elseif ($numericChoices[$x].Value.Contains("^^^")) {
                             Write-Host $numericChoices[$x].Value.Replace("^^^","") -ForegroundColor Red
-                        } else {
+                        } elseif ($numericChoices[$x].Value.Contains("***")) {
+                            Write-Host $numericChoices[$x].Value.Replace("***","") -ForegroundColor Cyan
+                        } elseif ($numericChoices[$x].Value.Contains("@@@")) {
+                            Write-Host $numericChoices[$x].Value.Replace("@@@","") -ForegroundColor Blue
+                        }else {
                             Write-Host $numericChoices[$x].Value -ForegroundColor $ItemColor
                         }
                     } else {
@@ -467,7 +471,11 @@ Function Show-STMenu () {
                                 Write-Host $numericChoices[$x].Value.Replace("!!!","") -ForegroundColor Green
                             } elseif ($numericChoices[$x].Value.Contains("^^^")) {
                                 Write-Host $numericChoices[$x].Value.Replace("^^^","") -ForegroundColor Red
-                            } else {
+                            } elseif ($numericChoices[$x].Value.Contains("***")) {
+                                Write-Host $numericChoices[$x].Value.Replace("***","") -ForegroundColor Cyan
+                            } elseif ($numericChoices[$x].Value.Contains("@@@")) {
+                                Write-Host $numericChoices[$x].Value.Replace("@@@","") -ForegroundColor Blue
+                            }else {
                                 Write-Host $numericChoices[$x].Value -ForegroundColor $ItemColor
                             }
                             
@@ -537,7 +545,7 @@ Function Show-STMenu () {
                 $form.Text = 'ISE Selection Dialog'
                 $form.Size = New-Object System.Drawing.Size(600,320)
                 $form.StartPosition = 'CenterScreen'
-                $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($PSHOME + "\powershell.exe")
+                #$form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($PSHOME + "\powershell.exe")
                 $form.MaximizeBox = $false
                 #$form.FormBorderStyle = "FixedDialog"
                 #$form.ControlBox = $true
