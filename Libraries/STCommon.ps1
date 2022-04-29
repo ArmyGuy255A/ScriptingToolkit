@@ -24,17 +24,17 @@
     
     Example 1: 
     if ($configData -eq $null) {
-    cd $PSScriptRoot
-    . "..\..\Libraries\STCommon.ps1"
+        cd $PSScriptRoot
+        . "..\..\Libraries\STCommon.ps1"
 
-    #get the config file's Fully Qualified name to pass into the Get-ConfigData
-    $configFQName = Get-ChildItem -Path ..\..\Libraries\Config.ini | Select-Object FullName
-    #load the Config.ini
-    $configData = @{}
-    $configData = Get-ConfigData $configFQName.FullName.ToString()
+        #get the config file's Fully Qualified name to pass into the Get-ConfigData
+        $configFQName = Get-ChildItem -Path ..\..\Config\Config.ini | Select-Object FullName
+        #load the Config.ini
+        $configData = @{}
+        $configData = Get-ConfigData $configFQName.FullName.ToString()
     } else {
-    cd $PSScriptRoot
-    . "..\..\Libraries\STCommon.ps1"
+        cd $PSScriptRoot
+        . "..\..\Libraries\STCommon.ps1"
     }
 
     Example 2:
