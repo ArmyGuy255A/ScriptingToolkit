@@ -25,7 +25,7 @@
     Example 1: 
     if ($configData -eq $null) {
     cd $PSScriptRoot
-    . "..\..\Libraries\Common.ps1"
+    . "..\..\Libraries\STCommon.ps1"
 
     #get the config file's Fully Qualified name to pass into the Get-ConfigData
     $configFQName = Get-ChildItem -Path ..\..\Libraries\Config.ini | Select-Object FullName
@@ -34,11 +34,11 @@
     $configData = Get-ConfigData $configFQName.FullName.ToString()
     } else {
     cd $PSScriptRoot
-    . "..\..\Libraries\Common.ps1"
+    . "..\..\Libraries\STCommon.ps1"
     }
 
     Example 2:
-    . "Libraries\Common.ps1"
+    . "Libraries\STCommon.ps1"
 #>
 #use dot-notation to include libraries.
 . "$PSScriptRoot\STConfigData.ps1"
