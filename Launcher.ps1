@@ -250,7 +250,7 @@ Function main {
 
         #Get the folder names in the Menus folder. Create the Menu system based on this value.
         Write-STLog -Message "Populating Menus subdirectory. Excluding the Admin folder" -AlertType Success -OutFile $LauncherLogFile
-        $folders = Get-ChildItem Menus -Directory -Exclude Admin
+        $folders = Get-ChildItem Menus -Directory -Exclude Admin,$configData.LogDirectory
         foreach ($folder in $folders) {
             $menuItems += $folder.Name
         }
