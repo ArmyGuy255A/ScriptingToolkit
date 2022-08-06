@@ -50,10 +50,10 @@ Function Backup-STFile() {
   This cmdlet copys a source file to a target directory and renames the log to a numbered sequence.
   
   .EXAMPLE
-  Backup-STFile -SourceFile c:\ScriptingToolkit\Config\Config.ini
+  Backup-STFile -SourceFile c:\ScriptingToolkit\Config\config.json
   
   .EXAMPLE
-  Backup-STFile -SourceFile c:\ScriptingToolkit\Config\Config.ini -DestinationDirectory c:\ScriptingToolkit\Config\ConfigBackups
+  Backup-STFile -SourceFile c:\ScriptingToolkit\Config\config.json -DestinationDirectory c:\ScriptingToolkit\Config\ConfigBackups
   
   #>
   
@@ -234,11 +234,11 @@ Function Write-STLog() {
 
       #Write the prefix
       if ($WithTimestamp) {
-        $entry += $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") + ": "
+        $entry += $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") + "; "
       }
 
       if ($null -ne $messagePrefix) {
-        $entry += $messagePrefix + ": "
+        $entry += $messagePrefix + "; "
       }
 
       $entry += $Message
@@ -253,7 +253,7 @@ Function Write-STLog() {
     }
     Catch {
       #Process any error handling here.
-      Write-Host "ERROR: in function: $($MyInvocation.MyCommand)" -ForegroundColor Red
+      Write-Host "ERROR; in function: $($MyInvocation.MyCommand)" -ForegroundColor Red
       Write-Host $PSItem.Exception
     }
   }
@@ -394,10 +394,10 @@ Generates an alert in the console window and logs the alert using the Write-STLo
         }
         #Write the prefix
         if ($WithTimestamp) {
-          Write-Host $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") ": " -NoNewLine
+          Write-Host $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") "; " -NoNewLine
         }
         Write-Host $messagePrefix -ForegroundColor $messagePrefixForegroundColor -BackgroundColor $messagePrefixBackgroundColor -NoNewline
-        Write-Host " : $message"
+        Write-Host " ; $message"
         
         if ($OutFile -and $PSCmdlet.MyInvocation.PipelinePosition -eq 1) {
             Write-STLog -Message $Message -AlertType $AlertType -OutFile $OutFile -Append $Append
@@ -407,7 +407,7 @@ Generates an alert in the console window and logs the alert using the Write-STLo
 
     Catch {
       #Process any error handling here.
-      Write-Host "ERROR: in function: $($MyInvocation.MyCommand)" -ForegroundColor Red
+      Write-Host "ERROR; in function: $($MyInvocation.MyCommand)" -ForegroundColor Red
       Write-Host $PSItem.Exception
     }
   }

@@ -17,19 +17,48 @@ PS C:\ScriptingToolkit> .\Launcher.ps1
 'https://github.com/ArmyGuy255A/ScriptingToolkit'
 
 #>
+[CmdletBinding()]
+Param (
+    [Parameter(Mandatory=$false)]
+    $configData
+)
 
 Set-Location $PSScriptRoot
 
-#use dot-notation to pull commonly used functions.
-. "Libraries\STCommon.ps1"
+function Get-ToolkitFile {
+  [CmdletBinding()]
+  param (
+      [Parameter()]
+      [string]
+      $Directory = ".",
+      [Parameter()]
+      [string]
+      $File,
+      [Parameter()]
+      [switch]
+      $RecurseUp
+  )
+  $tkFile = Get-ChildItem -Path $Directory -Filter $File -Depth 1 -ErrorAction Ignore
+
+  if ($null -ne $tkFile) {
+      return $tkFile
+  } elseif ($RecurseUp) {
+      $path = (Get-Item -Path $Directory)
+      return Get-ToolkitFile -Directory $path.Parent.Fullname -File $File -RecurseUp
+  }
+}
+
+#This imports the common libraries for use throughout every script.
+$stCommon = Get-ToolkitFile -File "Libraries/STCommon.ps1" -RecurseUp
+. $stCommon.FullName
 
 #get the config file's Fully Qualified name to pass into Get-ConfigData
-$configFQName = Get-ChildItem -Path Config\config.ini -ErrorAction SilentlyContinue | Select-Object FullName
+$configFQName = Join-Path (Get-Location) "Config/config.json"
 
-#load the config.ini
+#load the config data
 Test-ConfigFile $configFQName
 $configData = @{}
-$configData = Get-ConfigData $configFQName.FullName.ToString()
+$configData = Get-ConfigData $configFQName
 
 #make the log directory
 if (!$(Test-Path $configData.LogDirectory)) { 
@@ -79,10 +108,10 @@ Function mainMenuAction ($result) {
 
     #Determine the total number of Folders and subtract the number of non-folder items.
     $folderItems = $menuItems.Count
-    if ($configData.EnableUpdates.Equals("true")) {
+    if ($configData.EnableUpdates) {
         $folderItems -= 1
     }
-    if ($configData.EnableAdminUploader.Equals("true")) {
+    if ($configData.EnableAdminUploader) {
         $folderItems -= 1
     }
 
@@ -91,18 +120,11 @@ Function mainMenuAction ($result) {
         #Do specific things in directories here.
         $directory = Get-Item ".\Menus\$($menuItems[$result])"
 
-        <#TODO: Add logic to execute a script within the folder instead of showing the folder.
-        # Maybe add 'Launcher' to the beginning of the script to execute the script without entering the directory.
-        #>
-
-
         #Just show the directory contents
         Write-STLog -Message "Showing STMenu: $($directory.Name)" -OutFile $LauncherLogFile 
         #Navigate through the folder structure.
         Show-STDirectoryScriptMenu -Path $directory
         Write-STLog -Message "Skipping the result" -OutFile $LauncherLogFile 
-        
-        
 
     } elseif ($menuItems[$result].Contains("Update")) {
 
@@ -113,7 +135,7 @@ Function mainMenuAction ($result) {
             $logDir = $configData.LogDirectory + "\Updates\$logName.log"
 
             <#Update Guidelines:
-                Major versions trigger a complete update. The config.ini file is backed up and migrated to the newest version, plus any minor and revision changes are made.
+                Major versions trigger a complete update. The config.json file is backed up and migrated to the newest version, plus any minor and revision changes are made.
                 Minor versions trigger an update to .ps1 files and their dependencies such as CSV files. If a CSV file changes, it triggers a minor update
                 Revision versions trigger an update to only existing .ps1 files. If the code is corrected without notice to the user, it's a revision
             #>
@@ -121,24 +143,24 @@ Function mainMenuAction ($result) {
             #Determines the type of update that will be performed. Major, Minor, or Revision
             if ($versionInfo[0].Major -lt $versionInfo[1].Major) {
                 #Major Update
-                robocopy $configData.UpdateDirectory.ToString() $configData.ToolRootDirectory.ToString() *.ps1 *.csv *.jpg *.exe /R:3 /W:5 /TEE /ETA /S /XD Development HBSS SharePoint Workstations inactive* /XF config.ini
+                robocopy $configData.UpdateDirectory.ToString() (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName.ToString() *.ps1 *.csv *.jpg *.exe /R:3 /W:5 /TEE /ETA /S /XD Development HBSS SharePoint Workstations inactive* /XF config.json
 
-                #Schema could have changed during the major revision. Transfer the current config data to the serverConfigData format and update the config.ini file with the changes.
-                Migrate-ConfigData $configData $configFQName.FullName.ToString()
-                Write-STLog -Message "Loosely migrated Config.ini Data." -OutFile $LauncherLogFile 
+                #Schema could have changed during the major revision. Transfer the current config data to the serverConfigData format and update the config.json file with the changes.
+                Migrate-ConfigData $configData $configFQName
+                Write-STLog -Message "Loosely migrated config.json Data." -OutFile $LauncherLogFile 
 
                 #The delay helps ensure the files are not being accessed during the next step
                 delayInSeconds(1)
 
-                #Update Revision number in config.ini file
-                Update-ConfigVersion $configData $configFQName.FullName.ToString()
+                #Update Revision number in config.json file
+                Update-ConfigVersion $configData $configFQName
            
             } elseif ($versionInfo[0].Minor -lt $versionInfo[1].Minor) {
                 #Minor Update
-                robocopy $configData.UpdateDirectory.ToString() $configData.ToolRootDirectory.ToString() *.ps1 *.csv *.jpg *.exe /R:3 /W:5 /TEE /ETA /S /XD Development HBSS SharePoint Workstations inactive* /XF config.ini
+                robocopy $configData.UpdateDirectory.ToString() (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName.ToString() *.ps1 *.csv *.jpg *.exe /R:3 /W:5 /TEE /ETA /S /XD Development HBSS SharePoint Workstations inactive* /XF config.json
 
-                #Update Revision number in config.ini file
-                Update-ConfigVersion $configData $configFQName.FullName.ToString()
+                #Update Revision number in config.json file
+                Update-ConfigVersion $configData $configFQName
 
             } elseif ($versionInfo[0].Revision -lt $versionInfo[1].Revision) {
                 #Revision Update
@@ -152,10 +174,10 @@ Function mainMenuAction ($result) {
                 /XD   - Exclude Directories
                 *.ps1 - Only copy .ps1 files
                 #>
-                robocopy $configData.UpdateDirectory.ToString() $configData.ToolRootDirectory.ToString() *.ps1 *.jpg /R:3 /W:5 /TEE /ETA /S /XD Development HBSS SharePoint Workstations inactive* /XF config.ini
+                robocopy $configData.UpdateDirectory.ToString() (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName.ToString() *.ps1 *.jpg /R:3 /W:5 /TEE /ETA /S /XD Development HBSS SharePoint Workstations inactive* /XF config.json
 
-                #Update Revision number in config.ini file
-                Update-ConfigVersion $configData $configFQName.FullName.ToString()
+                #Update Revision number in config.json file
+                Update-ConfigVersion $configData $configFQName
             } 
             Write-STLog -Message "Toolkit Updated." -AlertType Success -OutFile $LauncherLogFile | Write-STAlert
         } else {
@@ -163,12 +185,12 @@ Function mainMenuAction ($result) {
         }
     } elseif ($menuItems[$result].Contains("Upload")) {
 
-        #Present a menu to update the config.ini file's revision number
+        #Present a menu to update the config.json file's revision number
         $title = "Upload Wizard"
         $choices = @("Publish Major Version", 
         "Publish Minor Version",
         "Publish Revision")
-        $versionText1 = "Clients perform a complete update. The config.ini file is backed up and migrated to the newest version, plus any minor and revision changes are made."
+        $versionText1 = "Clients perform a complete update. The config.json file is backed up and migrated to the newest version, plus any minor and revision changes are made."
         $versionText2 = "Clients perform an update to .ps1 files and their dependencies such as CSV files. If a CSV file format changes, it should be a minor update"
         $versionText3 = "Revision versions trigger an update to only existing .ps1 files. If the code is corrected without operational impact to the user, it's a revision"
         $info = @("Major Versions", $versionText1, "Minor Versions", $versionText2, "Revisions", $versionText3)
@@ -184,24 +206,24 @@ Function mainMenuAction ($result) {
                 continue
             } 
 
-            #Automatically update the config.ini file
+            #Automatically update the config.json file
             switch ($result) {
                 1 {
                     #Major Versions
-                    Write-STLog -Message "Incrementing Config.ini Major Version" -OutFile $LauncherLogFile
-                    Increment-ConfigVersion $configData $configFQName.FullName.ToString() 1
+                    Write-STLog -Message "Incrementing config.json Major Version" -OutFile $LauncherLogFile
+                    Increment-ConfigVersion $configData $configFQName 1
                 }
 
                 2 {
                     #Minor Versions
-                    Write-STLog -Message "Incrementing Config.ini Minor Version" -OutFile $LauncherLogFile
-                    Increment-ConfigVersion $configData $configFQName.FullName.ToString() 2
+                    Write-STLog -Message "Incrementing config.json Minor Version" -OutFile $LauncherLogFile
+                    Increment-ConfigVersion $configData $configFQName 2
                 }
 
                 3 {
                     #Revisions
-                    Write-STLog -Message "Incrementing Config.ini Revision" -OutFile $LauncherLogFile
-                    Increment-ConfigVersion $configData $configFQName.FullName.ToString() 3
+                    Write-STLog -Message "Incrementing config.json Revision" -OutFile $LauncherLogFile
+                    Increment-ConfigVersion $configData $configFQName 3
                 }
 
             }
@@ -219,7 +241,7 @@ Function mainMenuAction ($result) {
             #Upload the toolkit to the server
             try {
                 Write-STLog -Message "Uploading toolkit to: $($configData.UpdateDirectory)" -OutFile $LauncherLogFile
-                robocopy  $configData.ToolRootDirectory.ToString() $configData.UpdateDirectory.ToString() * /R:3 /W:5 /TEE /ETA /S /XD Development Temp Test Logs inactive* logs /XF *.log *.csv *.xls *.xlsx
+                robocopy  (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName.ToString() $configData.UpdateDirectory.ToString() * /R:3 /W:5 /TEE /ETA /S /XD Development Temp Test Logs inactive* logs /XF *.log *.csv *.xls *.xlsx
                 Write-STLog -Message "Uploaded toolkit to: $($configData.UpdateDirectory)" -AlertType Success -OutFile $LauncherLogFile
             } catch {
                 Write-STLog -Message "Failed to upload toolkit to: $($configData.UpdateDirectory)" -AlertType Failure -OutFile $LauncherLogFile
@@ -239,7 +261,7 @@ Function main {
     #Sometimes, other scripts may change the present working directory. Set the location just in case.
     
     Set-Location $PSScriptRoot
-    $configData = Get-ConfigData $configFQName.FullName.ToString()
+    $configData = Get-ConfigData $configFQName
 
         #Show the main menu
         $result = 0
@@ -257,12 +279,12 @@ Function main {
 
         #Check for an update
         $updateAvailable = ""
-        if ($configData.EnableUpdates.Contains("true")) {
+        if ($configData.EnableUpdates) {
             Write-STLog -Message "Updates Enabled. Checking for update." -AlertType Success -OutFile $LauncherLogFile
             $versionInfo = Check-ConfigVersion $configData
             $updateAvailable = $versionInfo[2]
             $menuItems += "$updateAvailable"
-            if ($configData.EnableAdminUploader.Equals("true")) {
+            if ($configData.EnableAdminUploader) {
                 Write-STLog -Message "Uploader Enabled. Adding 'Admin Uploader' to the menu system" -AlertType Success -OutFile $LauncherLogFile
                 $menuItems += "Upload Toolkit (Admin Only)"
             } else {
@@ -286,7 +308,7 @@ Function main {
 }
 
 #Check for admin rights
-if ($configData.DebugMode -ine "on") {
+if (!$configData.DebugMode) {
     Clear-Host
 }
 

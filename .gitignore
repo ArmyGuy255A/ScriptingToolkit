@@ -13,6 +13,7 @@
 
 # Development Directories
 [Dd]evelopment/
+[Dd]evelopment/*
 [Tt]emp/
 [Tt]est/
 
@@ -22,6 +23,9 @@
 # Admin menu directory
 [Mm]enus/*
 ![Mm]enus/Admin
+
+Config/config.*
+Config/*
 
 
 # Visual Studio 2015/2017 cache/options directory

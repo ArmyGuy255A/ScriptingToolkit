@@ -24,12 +24,12 @@ The purpose of the toolkit is designed for administrators that want to to share 
     <br />
     ![](Help/DirectoryListing.png?raw=true)
     
-2. Generate the config.ini file by [launching](#launching-the-toolkit) the `.\Launcher.ps1` from the PowerShell CLI in the toolkit's root directory. 
-   - If the `Config\config.ini` file already exists, it will be migrated to the latest version in `Templates\config.ini` and the old version will be backed up.
-   - Running the toolkit for the first time will generate a new config.ini and place it into the `\Config` directory. 
+2. Generate the config.json file by [launching](#launching-the-toolkit) the `.\Launcher.ps1` from the PowerShell CLI in the toolkit's root directory. 
+   - If the `Config\config.json` file already exists, it will be migrated to the latest version in `Templates\config.json` and the old version will be backed up.
+   - Running the toolkit for the first time will generate a new config.json and place it into the `\Config` directory. 
 
-3. Modify the [config.ini](#the-config.ini) file based on your environment's requirements.
-   - Take the time to ensure no unnecessary changes happened to your config.ini file.
+3. Modify the [config.json](#the-config.json) file based on your environment's requirements.
+   - Take the time to ensure no unnecessary changes happened to your config.json file.
 
 4. Add your PowerShell scripts to the Menus directory.
    - Only .ps1 and .ps1m files will show up in the menu system.
@@ -82,8 +82,8 @@ The toolkit comes with a standard set of shortcuts that eases launching the tool
 1. Launch a PowerShell CLI
 2. Type one of the shortcuts such as `tk`
 
-## The Config.ini
-The [config.ini](Templates\config.ini) is the main component of the toolkit that allows the use of standardized variables throughout the environment. Please see the [CONFIG.md](Templates\CONFIG.md) help file to learn more about customizing the file.
+## The config.json
+The [config.json](Templates\config.json) is the main component of the toolkit that allows the use of standardized variables throughout the environment. Please see the [CONFIG.md](Templates\CONFIG.md) help file to learn more about customizing the file.
 
 ## The Admin Menu
 The Admin menu is where you can perform certain actions to simplify repetitive tasks like launching a new administrative PowerShell window.

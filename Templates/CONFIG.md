@@ -1,12 +1,12 @@
-# The Config.ini File
-The config.ini is the component that makes this toolkit portable between environments. The toolkit converts the `config.ini` into a global variable upon launching. The code responsible for all interaction with the `config.ini` is the [ConfigData.ps1](..\Libraries\ConfigData.ps1) file. There are two categories of parameters contained within the `config.ini`. There are [required](#required-parameters) and [environment](#environment-parameters) parameters. [Required parameters](#required-parameters) must be present for the toolkit framework to function. [Environment parameters](#environment-parameters) are custom parameters needed for your environment. Examples of [Required parameters](#required-parameters) are used for features like versioning and updates. Examples of [Environment parameters](#environment-parameters) include special directories, expiration requirements, server names, naming conventions, or boolean values. Using the parameters within your environment is very easy. See the section on [Using Parameters](#using-parameters) within your scripts. See the section on [Creating New Parameters](#creating-new-parameters) for customizing your environment.
+# The config.json File
+The config.json is the component that makes this toolkit portable between environments. The toolkit converts the `config.json` into a global variable upon launching. The code responsible for all interaction with the `config.json` is the [ConfigData.ps1](..\Libraries\ConfigData.ps1) file. There are two categories of parameters contained within the `config.json`. There are [required](#required-parameters) and [environment](#environment-parameters) parameters. [Required parameters](#required-parameters) must be present for the toolkit framework to function. [Environment parameters](#environment-parameters) are custom parameters needed for your environment. Examples of [Required parameters](#required-parameters) are used for features like versioning and updates. Examples of [Environment parameters](#environment-parameters) include special directories, expiration requirements, server names, naming conventions, or boolean values. Using the parameters within your environment is very easy. See the section on [Using Parameters](#using-parameters) within your scripts. See the section on [Creating New Parameters](#creating-new-parameters) for customizing your environment.
 
 ## Required Parameters
 ### \[ToolkitName\]
 This parameter rebrands the toolkit to your environment
 ### \[Version\]
 The current version of the toolkit in the following format: \[Major\].\[Minor\].\[Revision\] <br />
-**1** - Major Versions - Any changes to the config.ini should result in a major version change <br />
+**1** - Major Versions - Any changes to the config.json should result in a major version change <br />
 **2** - Minor Versions - Any new scripts, files or directories should result in a minor version change <br />
 **3** - Revisions - Any updates made to existing scripts or files should result in a revision change <br />
 ### \[LogDirectory\]

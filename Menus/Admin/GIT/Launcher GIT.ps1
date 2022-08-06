@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-This script Commits, Pushes, and Pulls the latest files from the git repository located in the Config.ini file
+This script Commits, Pushes, and Pulls the latest files from the git repository located in the config.json file
 
 .EXAMPLE
 Sync-STGitRepo
@@ -16,55 +16,51 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
 #>
 
 #region Parameters
+#Allow the script to accept $configData from any other script in the toolkit
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [hashtable]$configData
+    $configData
 )
 
-#This function imports the common libraries for use throughout every script.
-function Get-STCommonDirectory () {
-    $notFound = $true
-    $libraryDirectory = $PSScriptRoot
-    while ($notFound) {
-        #Iterate through the directories until STCommon.ps1 is found.
-        Set-Location $libraryDirectory
-        $STCommon = Get-ChildItem -Path Libraries\STCommon.ps1 -ErrorAction:SilentlyContinue
-        if (!$STCommon) {
-            Set-Location ..
-            $libraryDirectory = Get-Location
-        } else {
-            #Found STCommon.ps1 - Return the directory
-            $notFound = $false
-            return $STCommon[0].FullName
-
-        }
+function Get-ToolkitFile {
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [string]
+        $Directory = ".",
+        [Parameter()]
+        [string]
+        $File,
+        [Parameter()]
+        [switch]
+        $RecurseUp
+    )
+    $tkFile = Get-ChildItem -Path $Directory -Filter $File -Depth 1 -ErrorAction Ignore
+  
+    if ($null -ne $tkFile) {
+        return $tkFile
+    } elseif ($RecurseUp) {
+        $path = (Get-Item -Path $Directory)
+        return Get-ToolkitFile -Directory $path.Parent.Fullname -File $File -RecurseUp
     }
-}
-
-#This function imports the config.ini data within the script
-if ($configData -eq $null) {
-    #Import the STCommon.ps1 libraries
-    $STCommonDirectory = Get-STCommonDirectory
-    . $STCommonDirectory
-
-    #get the config file's Fully Qualified name to pass into the Get-ConfigData
-    $configFQName = Get-ChildItem -Path Config\config.ini | Select-Object FullName
-    #load the config.ini
-    $configData = @{}
-    $configData = Get-ConfigData $configFQName.FullName.ToString()
-} else {
-    #Import the STCommon.ps1 libraries
-    $STCommonDirectory = Get-STCommonDirectory
-    . $STCommonDirectory
-}
-#endregion
+  }
+  
+  # Note, ensure RecurseUp is enabled if this function is called below the root directory
+  if ($null -eq $configData) {
+    $configData =  Get-ToolkitFile -File "Config/config.json" -RecurseUp | Get-Content -Encoding utf8 | ConvertFrom-Json 
+  }
+  
+  #This imports the common libraries for use throughout every script.
+  $stCommon = Get-ToolkitFile -File "Libraries/STCommon.ps1" -RecurseUp
+  . $stCommon.FullName
+  #endregion
 
 #region Initialization
 
 #Set Error Action to Silently Continue
 $ErrorActionPreference = 'Stop'
-Set-Location $configData.ToolRootDirectory
+Set-Location (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).Directory
 #endregion
 
 #region Globals
@@ -76,13 +72,13 @@ $logFile = $configData.LogDirectory + "\GIT\GIT.log"
 Function Sync-STGitRepo() {
 <#
 .SYNOPSIS
-This cmdlet performs a Commit, Push, and Pull operation for the $configData.ToolRootDirectory
+This cmdlet performs a Commit, Push, and Pull operation for the (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName
 
 .DESCRIPTION
 The
 
 .EXAMPLE
-Sync-STGitRepo -URL "https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit" -Directory $configData.ToolRootDirectory
+Sync-STGitRepo -URL "https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit" -Directory (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName
 
 .EXAMPLE
 Sync-STGitRepo -URL "https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security and Compliance Team/_git/ScriptingToolkit" -Directory C:\ScriptingToolkit
@@ -126,7 +122,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
         #Set the location for git.exe
         if (!$GITExecutablePath) {
             #use the installLocation from the registry
-            $GITExecutablePath = $gitInfo.InstallLocation + "bin\git.exe"
+            $GITExecutablePath = ("{0}\git.exe" -f ($env:path -split ";" | Where-Object {$_.Contains("Git")}))
         } else {
             #Ensure \Git is within the executable path
             if ($GITExecutablePath -match '\\Git(.*)') {
@@ -158,7 +154,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
         while ($masterChanges) {
 
             #Get all of the changes in the master directory
-            $changesInfo = & $GITExecutablePath diff HEAD...origin --shortstat --numstat -C $configData.ToolRootDirectory
+            $changesInfo = & $GITExecutablePath diff HEAD...origin --shortstat --numstat -C (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName
             #Parse through the change information and format it nicely for the STMenu
             $info = ""            
             foreach ($item in $changesInfo) {
@@ -176,7 +172,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
 
             #Pull the files
             try {
-                $response = & $GITExecutablePath -C $configData.ToolRootDirectory merge
+                $response = & $GITExecutablePath -C (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName merge
                 Write-STAlert -Message "Pulled From Master: $response" -AlertType Success -OutFile $logFile
                 $masterChanges = $null
             } catch {
@@ -193,7 +189,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
         #Determine any changes on the local machine
         $branchChanges = $null
         try {
-            $branchChanges = & $GITExecutablePath diff master --name-only -C $configData.ToolRootDirectory
+            $branchChanges = & $GITExecutablePath diff master --name-only -C (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName
         }
         catch {
             Write-STAlert -Message "Captured Branch Changes"
@@ -210,7 +206,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
         while ($branchChanges) {
             
             #Get all of the changes on the branch directory
-            $changesInfo = & $GITExecutablePath diff master --shortstat --numstat -C $configData.ToolRootDirectory
+            $changesInfo = & $GITExecutablePath diff (git branch --show-current) --shortstat --numstat -C (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName
             #Parse through the change information and format it nicely for the STMenu
             $info = ""            
             foreach ($item in $changesInfo) {
@@ -228,15 +224,15 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
 
             #Read user input and only accept messages whose length is > 0 and <= 72
             while ($commitMessage.Length -gt 72 -or $commitMessage.Length -lt 1) {
-                if ($configData.DebugMode -ine "on") {     Clear-Host }
+                if (!$configData.DebugMode) {     Clear-Host }
                 $commitMessage = Show-STReadHostMenu -Title "Commit Message" -Prompt "Enter a commit message ($maxCharacterLength MAX characters)"
                 $commitMessage = $commitMessage.Trim()
-                if ($configData.DebugMode -ine "on") {     Clear-Host }
+                if (!$configData.DebugMode) {     Clear-Host }
             }
 
             #Stage the files
             try {
-                $response = & $GITExecutablePath -C $configData.ToolRootDirectory add .
+                $response = & $GITExecutablePath -C (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName add .
                 Write-STAlert -Message "Staged all files: $response" -AlertType Success -OutFile $logFile
             } catch {
                 Write-STAlert -Message $PSItem.Exception -OutFile $logFile
@@ -244,7 +240,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
 
             #Commit the files
             try {
-                $response = & $GITExecutablePath -C $configData.ToolRootDirectory commit -a -m $commitMessage
+                $response = & $GITExecutablePath -C (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName commit -a -m $commitMessage
                 Write-STAlert -Message "Committed all files: $response" -AlertType Success -OutFile $logFile
             } catch {
                 Write-STAlert -Message $PSItem.Exception -OutFile $logFile
@@ -252,7 +248,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
 
             #Push the files
             try {
-                $response = & $GITExecutablePath -C $configData.ToolRootDirectory push
+                $response = & $GITExecutablePath -C (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName push
                 Write-STAlert -Message "Pushed To Master: $response `n $changesInfo" -AlertType Success -OutFile $logFile
                 $branchChanges = $null
             } catch {
@@ -310,7 +306,7 @@ https://microsoft.visualstudio.com/M365 Security and Compliance/M365 Security an
 Try {
     #Launch the function
     if ($configData.GITEnabled -ieq "true") {
-        Sync-STGitRepo -URL $configData.GITRepository -Directory $configData.ToolRootDirectory
+        Sync-STGitRepo -URL $configData.GITRepository -Directory (Get-ToolkitFile -File "Launcher.ps1" -RecurseUp).FullName
     }   
 }
 

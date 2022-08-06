@@ -13,7 +13,7 @@
   * Created STMenuSystem
 * Added GIT capability to the Admin menu
   * Must have GIT installed from the [Dependencies](README.md#dependencies) page
-  * Must have the [Config.ini](Templates\CONFIG.md) setup for GIT integration
+  * Must have the [config.json](Templates\CONFIG.md) setup for GIT integration
 * Added a demo menu to the Menus folder
 * Added a modular and standardized logging capability
   * Importing STLogging.ps1 enables the following useful logging cmdlets
@@ -79,7 +79,7 @@
     ```  
 
 ## v0.5.2 (2/2/2018)
-* Added an auto-increment feature that updates the config.ini version when the toolkit is uploaded.
+* Added an auto-increment feature that updates the config.json version when the toolkit is uploaded.
 
 ## v0.5.0 (2/2/2018)
 

@@ -33,48 +33,40 @@ Version: <X.X.X>
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [hashtable]$configData
+    $configData
 )
 
-#This function imports the common libraries for use throughout every script.
-function Get-STCommonDirectory () {
-  $notFound = $true
-  $libraryDirectory = $PSScriptRoot
-  while ($notFound) {
-      #Iterate through the directories until STCommon.ps1 is found.
-      Set-Location $libraryDirectory
-      $STCommon = Get-ChildItem -Path Libraries\STCommon.ps1 -ErrorAction:SilentlyContinue
-      if (!$STCommon) {
-          #Move up a directory and keep searching
-          Set-Location ..
-          $libraryDirectory = Get-Location
-      } else {
-          #Found STCommon.ps1 - Return the directory
-          $notFound = $false
-          return $STCommon[0].FullName
+function Get-ToolkitFile {
+  [CmdletBinding()]
+  param (
+      [Parameter()]
+      [string]
+      $Directory = ".",
+      [Parameter()]
+      [string]
+      $File,
+      [Parameter()]
+      [switch]
+      $RecurseUp
+  )
+  $tkFile = Get-ChildItem -Path $Directory -Filter $File -Depth 1 -ErrorAction Ignore
 
-      }
+  if ($null -ne $tkFile) {
+      return $tkFile
+  } elseif ($RecurseUp) {
+      $path = (Get-Item -Path $Directory)
+      return Get-ToolkitFile -Directory $path.Parent.Fullname -File $File -RecurseUp
   }
 }
 
-#This config.ini data within the script
-if ($configData -eq $null) {
-  #Import the STCommon.ps1 libraries
-  $STCommonDirectory = Get-STCommonDirectory
-  . $STCommonDirectory
-
-  #get the config file's Fully Qualified name to pass into the Get-ConfigData
-  $configFQName = Get-ChildItem -Path Config\config.ini | Select-Object FullName
-  #load the config.ini
-  $configData = @{}
-  $configData = Get-ConfigData $configFQName.FullName.ToString()
-} else {
-  #Import the STCommon.ps1 libraries
-  $STCommonDirectory = Get-STCommonDirectory
-  . $STCommonDirectory
+# Note, ensure RecurseUp is enabled if this function is called below the root directory
+if ($null -eq $configData) {
+  $configData =  Get-ToolkitFile -File "Config/config.json" -RecurseUp | Get-Content -Encoding utf8 | ConvertFrom-Json 
 }
-#Return back to the script's execution directory.
-Set-Location $PSScriptRoot
+
+#This imports the common libraries for use throughout every script.
+$stCommon = Get-ToolkitFile -File "Libraries/STCommon.ps1" -RecurseUp
+. $stCommon.FullName
 #endregion
 
 #region Initialization

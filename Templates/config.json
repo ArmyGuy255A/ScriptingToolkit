@@ -1,0 +1,12 @@
+{
+    "ToolkitName": "The Scripting Toolkit",
+    "Version": "2.0.0",
+    "LogDirectory": ".\\Logs",
+    "GITEnabled": true,
+    "GITRepository": "https://gitlab.domain.local:8443",
+    "VaultEndpoint": "https://vault.domain.local:8200",
+    "EnableUpdates": true,
+    "EnableAdminUploader": true,
+    "UpdateDirectory": "C:\\UpdateDirectory\\ScriptingToolkit",
+    "DebugMode": false
+}

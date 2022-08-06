@@ -9,7 +9,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [hashtable]$configData
+    $configData
 )
 
 #This function imports the common libraries for use throughout every script.
@@ -32,15 +32,15 @@ function Get-STCommonDirectory () {
     }
 }
 
-#This function imports the config.ini data within the script
+#This function imports the config.json data within the script
 if ($configData -eq $null) {
     #Import the STCommon.ps1 libraries
     $STCommonDirectory = Get-STCommonDirectory
     . $STCommonDirectory
 
     #get the config file's Fully Qualified name to pass into the Get-ConfigData
-    $configFQName = Get-ChildItem -Path Config\config.ini | Select-Object FullName
-    #load the config.ini
+    $configFQName = Get-ChildItem -Path Config\config.json | Select-Object FullName
+    #load the config.json
     $configData = @{}
     $configData = Get-ConfigData $configFQName.FullName.ToString()
 } else {

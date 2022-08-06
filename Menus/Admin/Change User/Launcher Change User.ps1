@@ -30,7 +30,7 @@ Version: 1.0.0
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [hashtable]$configData
+    $configData
 )
 
 #This function imports the common libraries for use throughout every script.
@@ -72,15 +72,15 @@ function Test-SecLogon () {
     Write-Host ("[{0}]" -f $seclogon.Status.ToString().ToUpper()) -ForegroundColor $color
 }
 
-#This config.ini data within the script
+#This config.json data within the script
 if ($configData -eq $null) {
     #Import the STCommon.ps1 libraries
     $STCommonDirectory = Get-STCommonDirectory
     . $STCommonDirectory
 
     #get the config file's Fully Qualified name to pass into the Get-ConfigData
-    $configFQName = Get-ChildItem -Path Config\config.ini | Select-Object FullName
-    #load the config.ini
+    $configFQName = Get-ChildItem -Path Config\config.json | Select-Object FullName
+    #load the config.json
     $configData = @{}
     $configData = Get-ConfigData $configFQName.FullName.ToString()
 } else {
@@ -128,7 +128,7 @@ while ($result -eq -1) {
                 Set-Location $PSScriptRoot
             }
         }
-
+        Clear-Host
         if ($logonType -eq 0) {
             #Run the /smartcard option
             try {
@@ -140,7 +140,7 @@ while ($result -eq -1) {
         } else {
             #Run the /user option
             $username = Show-STReadHostMenu -Title "Enter Username" -Prompt "Username" -Info @("Hint     ","Include the domain with the username", "Example 1", "username@contoso.com", "Example 2", "CONTOSO\username")
-            if ($configData.DebugMode -ine "on") {     Clear-Host }
+            if (!$configData.DebugMode) {     Clear-Host }
             $password = Show-STReadHostMenu -Title "Enter Password" -Prompt "Password" -AsSecureString
             $credential = New-Object System.Management.Automation.PSCredential($username, $password)
 
@@ -153,6 +153,6 @@ while ($result -eq -1) {
             }
         }
         
-        pressAnyKeyToContinue
+        Show-STPromptForAnyKey
     } 
 }

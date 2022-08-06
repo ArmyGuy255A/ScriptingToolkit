@@ -28,8 +28,8 @@
     . "..\..\Libraries\Common.ps1"
 
     #get the config file's Fully Qualified name to pass into the Get-ConfigData
-    $configFQName = Get-ChildItem -Path ..\..\Libraries\Config.ini | Select-Object FullName
-    #load the Config.ini
+    $configFQName = Get-ChildItem -Path ..\..\Libraries\config.json | Select-Object FullName
+    #load the config.json
     $configData = @{}
     $configData = Get-ConfigData $configFQName.FullName.ToString()
     } else {

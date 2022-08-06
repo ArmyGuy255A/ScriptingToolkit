@@ -10,7 +10,7 @@ public enum MenuType
 "@
 }
 
-Function pressAnyKeyToContinue ($Message = "Press any key to continue . . . ") {
+Function Show-STPromptForAnyKey ($Message = "Press any key to continue . . . ") {
     If ($host.name -ine 'ConsoleHost' -and $ExecutionContext.SessionState.LanguageMode -ine "ConstrainedLanguage") {
         # The "ReadKey" functionality is not supported in Windows PowerShell ISE.
  
@@ -421,7 +421,7 @@ Function Show-STMenu () {
         #continue to show the prompt until there is valid input.
         $badInput = $true
         while ($badInput) {
-            if ($configData.DebugMode -ine "on") {     Clear-Host }
+            if (!$configData.DebugMode) {     Clear-Host }
             
             #Add the page number here.
             $pageString = "Page: ($($script:currentPage + 1) / $($script:lastPage + 1))"
@@ -808,7 +808,7 @@ Function Show-STMenu () {
             
         }
         
-        if ($configData.DebugMode -ine "on") {     Clear-Host }
+        if (!$configData.DebugMode) {     Clear-Host }
         #Input Validation
         if ($result.GetType() -eq [string]) {
             return $result.ToUpperInvariant()
@@ -1299,7 +1299,7 @@ Function Show-STConfirmationMenu ($selection, $title) {
 $result = 0
     while ($result -eq 0) {
         #Clear the screen
-        if ($configData.DebugMode -ine "on") {     Clear-Host }
+        if (!$configData.DebugMode) {     Clear-Host }
 
         if ($title.Length -eq 0) {
             $title = "Please confirm your selection"

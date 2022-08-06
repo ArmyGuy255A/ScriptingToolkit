@@ -1,10 +1,44 @@
-﻿. "$PSScriptRoot\..\..\Libraries\STCommon.ps1"
+﻿#region Parameters
 
-#get the config file's Fully Qualified name to pass into the Get-ConfigData
-$configFQName = Get-ChildItem -Path $PSScriptRoot\..\..\Config\config.ini -ErrorAction SilentlyContinue | Select-Object FullName
-Test-ConfigFile $configFQName
-$configData = @{}
-$configData = Get-ConfigData $configFQName.FullName.ToString()
+#Allow the script to accept $configData from any other script in the toolkit
+[CmdletBinding()]
+Param (
+    [Parameter(Mandatory=$false)]
+    $configData
+)
+
+function Get-ToolkitFile {
+  [CmdletBinding()]
+  param (
+      [Parameter()]
+      [string]
+      $Directory = ".",
+      [Parameter()]
+      [string]
+      $File,
+      [Parameter()]
+      [switch]
+      $RecurseUp
+  )
+  $tkFile = Get-ChildItem -Path $Directory -Filter $File -Depth 1 -ErrorAction Ignore
+
+  if ($null -ne $tkFile) {
+      return $tkFile
+  } elseif ($RecurseUp) {
+      $path = (Get-Item -Path $Directory)
+      return Get-ToolkitFile -Directory $path.Parent.Fullname -File $File -RecurseUp
+  }
+}
+
+# Note, ensure RecurseUp is enabled if this function is called below the root directory
+if ($null -eq $configData) {
+  $configData =  Get-ToolkitFile -File "Config/config.json" -RecurseUp | Get-Content -Encoding utf8 | ConvertFrom-Json 
+}
+
+#This imports the common libraries for use throughout every script.
+$stCommon = Get-ToolkitFile -File "Libraries/STCommon.ps1" -RecurseUp
+. $stCommon.FullName
+#endregion
 
 $ErrorActionPreference = "SilentlyContinue"
 
