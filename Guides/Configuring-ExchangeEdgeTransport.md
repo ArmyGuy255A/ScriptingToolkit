@@ -1,20 +1,24 @@
-50636 -> to DC
-25 -> to EXCH
-389 -> to DC
-
-DC: 192.168.0.1
-EXCH: 192.168.0.5
-EDGE: 172.16.0.5 (Not on the domain)
-EXTERNAL EMAIL SERVER : 10.0.10.5
-EXTERNAL EMAIL DOMAIN : contoso.com
-INTERNAL EMAIL DOMAIN : fabrikam.com
-DMZ EMAIL DOMAIN : fabrikam.external.com
-
 [Exch 2019 Edge Transport](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/prerequisites?view=exchserver-2019)
 
 # Prepare
 
 WARNING: This setup assumes the edge server is not joined to a domain and sits in a DMZ
+
+| Component                | IP Address    | Additional Info       |
+|--------------------------|---------------|-----------------------|
+| DC                       | 192.168.0.1   |                       |
+| EXCH                     | 192.168.0.5   |                       |
+| EDGE                     | 172.16.0.5    | Not on the domain     |
+| EXTERNAL EMAIL SERVER    | 10.0.10.5     |                       |
+| EXTERNAL EMAIL DOMAIN    | N/A           | contoso.com           |
+| INTERNAL EMAIL DOMAIN    | N/A           | fabrikam.com          |
+| DMZ EMAIL DOMAIN         | N/A           | fabrikam.external.com |
+
+| Port  | Destination | Description |
+|-------|-------------|-------------|
+| 50636 | DC          | to DC       |
+| 25    | EXCH        | to EXCH     |
+| 389   | DC          | to DC       |
 
 1. Install VC++ Redistributable 2012
 2. Create `edge` DNS record in DMZ DNS
